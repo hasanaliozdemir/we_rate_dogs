@@ -2,9 +2,10 @@ import 'package:anketdemoapp/auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:anketdemoapp/models/dog.dart';
+import 'package:anketdemoapp/widgets/cancel_button.dart';
 
-class DogsPage extends StatelessWidget{
-  DogsPage({this.auth,this.onSignedOut});
+class DogsPage extends StatelessWidget {
+  DogsPage({this.auth, this.onSignedOut});
   final BaseAuth auth;
   final VoidCallback onSignedOut;
 
@@ -12,32 +13,24 @@ class DogsPage extends StatelessWidget{
     try {
       await auth.signOut();
       onSignedOut();
-    }
-    catch(e) {
+    } catch (e) {
       print(e);
     }
   }
-   _signOutAlert(BuildContext context) {
+
+  _signOutAlert(BuildContext context) {
     Widget okButton = FlatButton(
       child: Text("Okey"),
       onPressed: () {
         _signOut();
-      Navigator.pop(context);
+        Navigator.pop(context);
       },
-    );
-
-    Widget cancelButton = FlatButton(
-      child: Text("Cancel"),
-      onPressed: () => Navigator.pop(context),
     );
 
     AlertDialog alert = AlertDialog(
       title: Text("Logging Out"),
       content: Text("You are going to log out"),
-      actions: <Widget>[
-        okButton,
-        cancelButton
-      ],
+      actions: <Widget>[okButton, CancelButton().cancelButton(context)],
     );
 
     showDialog(
@@ -50,26 +43,23 @@ class DogsPage extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    return  Scaffold(
+    return Scaffold(
       appBar: AppBar(
         actions: <Widget>[
           IconButton(
-            icon:  Icon(Icons.add),
-            onPressed: ()=>Navigator.pushNamed(context,"/image"),
+            icon: Icon(Icons.add),
+            onPressed: () => Navigator.pushNamed(context, "/image"),
           ),
           IconButton(
             icon: Icon(Icons.exit_to_app),
             onPressed: () => _signOutAlert(context),
           ),
-
         ],
         title: Text("We rate Dogs"),
       ),
       body: SurveyList(),
     );
   }
-
 }
 
 class SurveyList extends StatefulWidget {
@@ -96,11 +86,10 @@ class SurveyListState extends State {
 
   Widget buildBody(BuildContext context, List<DocumentSnapshot> snapshot) {
     return ListView(
-        padding: EdgeInsets.only(top: 20),
-        children:
-        snapshot.map<Widget>((data) => buildListItem(context, data)).toList(),
+      padding: EdgeInsets.only(top: 20),
+      children:
+          snapshot.map<Widget>((data) => buildListItem(context, data)).toList(),
     );
-
   }
 
   buildListItem(BuildContext context, DocumentSnapshot data) {
@@ -137,29 +126,10 @@ class SurveyListState extends State {
           ),
           onTap: () => Firestore.instance.runTransaction((transaction) async {
             final freshSnapshot =
-            await transaction.get(row.reference); // Snapshot
+                await transaction.get(row.reference); // Snapshot
             final fresh = Dog.fromSnapshot(freshSnapshot); // Anket
 
             await transaction.update(row.reference, {"vote": fresh.vote + 1});
-          }),
-          onLongPress: () => Firestore.instance.runTransaction((transaction) async {
-            showDialog(context: context, child: AlertDialog(
-              title: Text("Delete"),
-              actions: <Widget>[
-                FlatButton(
-                  child: Text("Okey"),
-                  onPressed: () {
-                    transaction.delete(row.reference);
-                    setState(() {});
-                    Navigator.pop(context);
-                  },
-                ),
-                FlatButton(
-                  child: Text("Cancel"),
-                  onPressed: ()=> Navigator.pop(context),
-                )
-              ],
-            ));
           }),
         ),
       ),

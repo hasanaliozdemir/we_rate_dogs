@@ -1,5 +1,4 @@
 import 'package:anketdemoapp/pages/dogs_page.dart';
-
 import 'login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:anketdemoapp/auth.dart';
@@ -9,15 +8,11 @@ class RootPage extends StatefulWidget {
   final BaseAuth auth;
   @override
   State<StatefulWidget> createState() {
-    // TODO: implement createState
     return _RootPageState();
   }
 }
 
-enum AuthStatus {
-  notSignedIn,
-  SignedIn
-}
+enum AuthStatus { notSignedIn, SignedIn }
 
 class _RootPageState extends State<RootPage> {
   AuthStatus authStatus = AuthStatus.notSignedIn;
@@ -27,7 +22,8 @@ class _RootPageState extends State<RootPage> {
     super.initState();
     widget.auth.currentUser().then((userId) {
       setState(() {
-        authStatus = userId == null ? AuthStatus.notSignedIn : AuthStatus.SignedIn ;
+        authStatus =
+            userId == null ? AuthStatus.notSignedIn : AuthStatus.SignedIn;
       });
     });
   }
