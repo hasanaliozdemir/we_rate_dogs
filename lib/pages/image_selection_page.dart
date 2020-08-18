@@ -51,10 +51,21 @@ class _ImageCaptureState extends State<ImageCapture> {
       ),
       bottomNavigationBar: BottomAppBar(
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: <Widget>[
-            IconButton(
-              icon: Icon(Icons.photo_camera),
-              onPressed: () => _pickImage(ImageSource.camera),
+             IconButton(
+                icon: Icon(Icons.photo_camera),
+                onPressed: () => _pickImage(ImageSource.camera),
+              ),
+            SizedBox(
+              height: 60,
+              width: 1,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: Colors.black
+                ),
+              )
+              ,
             ),
             IconButton(
               icon: Icon(Icons.photo_library),

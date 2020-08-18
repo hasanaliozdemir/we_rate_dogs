@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:anketdemoapp/auth.dart';
 
@@ -16,7 +17,7 @@ enum FormType { login, register, reset }
 
 class _LoginPageState extends State<LoginPage> {
   final formKey = new GlobalKey<FormState>();
-  String _email, _password;
+  String _email, _password,_warning;
   FormType _formType = FormType.login;
 
   bool validateAndSave() {
@@ -29,8 +30,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void sendResetEmail() {}
-
   void validateAndSubmit() async {
     if (validateAndSave()) {
       try {
@@ -38,16 +37,26 @@ class _LoginPageState extends State<LoginPage> {
           String userId =
               await widget.auth.signInWithEmailAndPassword(_email, _password);
           print("Signed In:  $userId");
-        } else {
+          widget.onSignedIn();
+        } else if(_formType == FormType.register){
           String userId = await widget.auth
               .createUserWithEmailAndPassword(_email, _password);
           print("Registered User:  $userId");
+          widget.onSignedIn();
         }
-        widget.onSignedIn();
+        else{
+          await widget.auth.sendPasswordResetEmail(_email);
+          setState(() {
+            _formType = FormType.login;
+            _warning = "Password reset e-mail sen to $_email";
+          });
+        }
       } catch (e) {
-        print("error: $e");
+        setState(() {
+          _warning = e.message;
+        });
       }
-    } else {}
+    }
   }
 
   void moveToRegister() {
@@ -74,20 +83,59 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
-      appBar: AppBar(
-        title: Text("Login Page"),
-      ),
-      body: Container(
-        padding: EdgeInsets.all(30),
-        child: Form(
-          key: formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: buildInputs() + buildSubmitButtons(),
+      body: SingleChildScrollView(
+        child: Container(
+          child: SafeArea(
+            child: Column(
+              children: [
+                  showWarning(),
+                  Padding(
+                    padding: EdgeInsets.all(20),
+                    child: Form(
+                      key: formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: buildInputs() + buildSubmitButtons(),
+                      ),
+                    ),
+                  )
+              ]
+              ),
+            ),
           ),
-        ),
       ),
-    );
+      );
+  }
+
+  Widget showWarning() {
+    if(_warning != null){
+      return Container(
+        color: Colors.amberAccent,
+        width: double.infinity,
+        padding: EdgeInsets.all(8),
+        child: Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Icon(Icons.error_outline),
+            ),
+            Expanded(child: Text(_warning,style: TextStyle(color: Colors.black,),),),
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: IconButton(
+                icon: Icon(Icons.close),
+                onPressed: () {
+                  setState(() {
+                    _warning = null;
+                  });
+                },
+              ),
+            )
+          ],
+        ),
+      );
+    }
+    return SizedBox(height: 0,);
   }
 
   List<Widget> buildInputs() {
@@ -194,7 +242,7 @@ class _LoginPageState extends State<LoginPage> {
         SizedBox(
           child: RaisedButton(
             child: Text("Send E-mail", style: TextStyle(fontSize: 25)),
-            onPressed: sendResetEmail,
+            onPressed: validateAndSubmit,
           ),
           height: 50,
         ),

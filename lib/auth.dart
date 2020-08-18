@@ -6,6 +6,7 @@ abstract class BaseAuth {
   Future<String> createUserWithEmailAndPassword(String email, String password);
   Future<String> currentUser();
   Future<void> signOut();
+  Future sendPasswordResetEmail(String email);
 }
 
 class Auth implements BaseAuth{
@@ -29,5 +30,9 @@ class Auth implements BaseAuth{
 
   Future<void> signOut() async {
     await _firebaseAuth.signOut();
+  }
+
+  Future sendPasswordResetEmail(String email){
+    return _firebaseAuth.sendPasswordResetEmail(email: email);
   }
 }
